@@ -1,5 +1,8 @@
-export default function redactJs(source) {
-    const src = source.split('');
+export default function redactJs(
+    source,
+    stringFill = '-',
+) {
+    let src = source.split('');
     const len = src.length;
     let i = -1;
 
@@ -8,10 +11,14 @@ export default function redactJs(source) {
     function processProgram() {
         while (++i < len) {
             switch (src[i]) {
-                case '`': processBackTick(); break;
-                case '{': processBlock(); break;
-                case '"': processDoubleQuote(); break;
-                case "'": processSingleQuote(); break;
+                case '`': processBackTick();
+                    break;
+                case '{': processBlock();
+                    break;
+                case '"': processDoubleQuote();
+                    break;
+                case "'": processSingleQuote();
+                    break;
                 case '/':
                     if (src[i+1] === '*') {
                         src[i] = ' ';
@@ -31,14 +38,19 @@ export default function redactJs(source) {
     function processBackTick() {
         while (++i < len) {
             switch (src[i]) {
-                case '\\': src[i] = ' '; src[++i] = ' '; break; // even if the next character is ` or {
-                case '`': return;
+                case '\\': // even if the next character is ` or $
+                    src[i] = stringFill;
+                    src[++i] = stringFill;
+                    break;
+                case '`':
+                    return;
                 case '$':
                     if (src[i+1] === '{') {
                         i++; processBlock()
-                    } else { src[i] = ' ' }
+                    } else { src[i] = stringFill }
                     break;
-                default: src[i] = ' ';
+                default:
+                    src[i] = stringFill;
             }
         }
     }
@@ -46,11 +58,16 @@ export default function redactJs(source) {
     function processBlock() { // needed so we don't get lost in template strings
         while (++i < len) {
             switch (src[i]) {
-                case '`': processBackTick(); break;
-                case '{': processBlock(); break;
-                case '}': return;
-                case '"': processDoubleQuote(); break;
-                case "'": processSingleQuote(); break;
+                case '`': processBackTick();
+                    break;
+                case '{': processBlock();
+                    break;
+                case '}':
+                    return;
+                case '"': processDoubleQuote();
+                    break;
+                case "'": processSingleQuote();
+                    break;
             }
         }
     }
@@ -58,9 +75,14 @@ export default function redactJs(source) {
     function processDoubleQuote() {
         while (++i < len) {
             switch (src[i]) {
-                case '\\': src[i] = ' '; src[++i] = ' '; break; // even if the next character is "
-                case '"': return;
-                default: src[i] = ' ';
+                case '\\': // even if the next character is "
+                    src[i] = stringFill;
+                    src[++i] = stringFill;
+                    break;
+                case '"':
+                    return;
+                default:
+                    src[i] = stringFill;
             }
         }
     }
@@ -68,9 +90,14 @@ export default function redactJs(source) {
     function processSingleQuote() {
         while (++i < len) {
             switch (src[i]) {
-                case '\\': src[i] = ' '; src[++i] = ' '; break; // even if the next character is '
-                case "'": return;
-                default: src[i] = ' ';
+                case '\\': // even if the next character is '
+                    src[i] = stringFill;
+                    src[++i] = stringFill;
+                    break;
+                case "'":
+                    return;
+                default:
+                    src[i] = stringFill;
             }
         }
     }
