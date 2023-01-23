@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "example-1": "node ./space-js-strings-and-comments/space-js-strings-and-comments.example.js",
+    "example-1": "node ./src/redact-js/redact-js.example.js",
     "test": "node test.js"
   },
   "repository": {

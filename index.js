@@ -1,1 +1,1 @@
-export { default as spaceJsStringsAndComments } from './space-js-strings-and-comments/';
+export { default as redactJs } from './src/redact-js/';

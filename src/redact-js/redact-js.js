@@ -1,4 +1,4 @@
-export default function spaceJsStringsAndComments(source) {
+export default function redactJs(source) {
     const src = source.split('');
     const len = src.length;
     let i = -1;

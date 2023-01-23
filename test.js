@@ -1,1 +1,1 @@
-import './space-js-strings-and-comments/space-js-strings-and-comments.test.js';
+import './src/redact-js/redact-js.test.js';

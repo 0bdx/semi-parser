@@ -19,12 +19,12 @@ Require an [LTS](https://github.com/nodejs/Release) Node version (v14.0.0+).
 
 ## __Usage__
 
-@TODO add the `spaceJsStringsAndComments()` description
+@TODO add the `redactJs()` description
 
 ```js
-import spaceJsStringsAndComments from './space-js-strings-and-comments.js';
+import { redactJs } from 'semi-parser';
 
-// Get some JavaScript source code. We would like to replace the identifier
+// In this JavaScript source code, we would like to replace the identifier
 // `foo` with `ok`, without changing the block comment, or the string "foo",
 const source = '/* Set foo to be "foo": */ let foo = "foo"; console.log(foo);';
 
@@ -36,9 +36,9 @@ const rx = /foo/g;
 // 10, 21, 34, 41 and 59.
 while (rx.exec(source)) console.log(rx.lastIndex);
 
-// Use spaceJsStringsAndComments() to fill all comments and strings with spaces.
-// It becomes: '                           let foo = "   "; console.log(foo);'.
-const result = spaceJsStringsAndComments(source);
+// Use redactJs() to fill strings with dashes, and replace comments with spaces.
+// `result` is '                           let foo = "---"; console.log(foo);'.
+const result = redactJs(source);
 
 // "foo" only appears twice in `result`, ending at index positions 34 and 59.
 // Fill an array with the parts of `source` which do not contain "foo".
@@ -52,13 +52,13 @@ while (rx.exec(result)) {
 parts.push(source.slice(from)); // the part after the final "foo"
 
 // Join the parts into a string, with 'ok' placed between each part.
-// `replaced` is: '/* Set foo to be "foo": */ let ok = "foo"; console.log(ok);'
+// `replaced` is '/* Set foo to be "foo": */ let ok = "foo"; console.log(ok);'
 const replaced = parts.join('ok');
 console.log(replaced);
 
 ```
 
-You can find the __`spaceJsStringsAndComments()`__ example in the
+You can find the __`redactJs()`__ example in the
 __space-js-strings-and-comments/__ directory, and run it using:  
 `npm run example-1`
 
