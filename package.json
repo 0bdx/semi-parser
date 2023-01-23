@@ -1,0 +1,22 @@
+{
+  "name": "semi-parser",
+  "version": "0.0.1",
+  "description": "A collection of tools for roughly (but quickly) parsing CSS, HTML and JavaScript",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "example-1": "node ./space-js-strings-and-comments/space-js-strings-and-comments.example.js",
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0bdx/semi-parser.git"
+  },
+  "keywords": [],
+  "author": "0bdx <hi@0bdx.com> (https://0bdx.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/0bdx/semi-parser/issues"
+  },
+  "homepage": "https://0bdx.com/semi-parser/"
+}
