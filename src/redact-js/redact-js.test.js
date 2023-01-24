@@ -12,13 +12,15 @@ equal(rjs('""'),
           '""');
 equal(rjs('const foo = "FOO\\""'),
           'const foo = "-----"');
-equal(rjs('{ a:"A", b:"B" }', { stringFill:'X' }),
+equal(rjs('const bar = "BAR\\""', { fillString:'' }),
+          'const bar = ""');
+equal(rjs('{ a:"A", b:"B" }', { fillString:'X' }),
           '{ a:"X", b:"X" }');
 
 // Just single quoted string.
 equal(rjs("''"),
           "''");
-equal(rjs("const foo = 'FOO\\''", { stringFill:' ' }),
+equal(rjs("const foo = 'FOO\\''", { fillString:' ' }),
           "const foo = '     '");
 equal(rjs("{ a:'A', b:'B' }"),
           "{ a:'-', b:'-' }");
@@ -26,11 +28,11 @@ equal(rjs("{ a:'A', b:'B' }"),
 // Single quotes inside double quotes.
 equal(rjs(`"'"`),
           `"-"`);
-equal(rjs(`const foo = "'FOO'", bar = "B'A'R"; `, { stringFill:'*' }),
+equal(rjs(`const foo = "'FOO'", bar = "B'A'R"; `, { fillString:'*' }),
           `const foo = "*****", bar = "*****"; `);
 
 // Double quotes inside single quotes.
-equal(rjs(`'"'`, { stringFill:'MULTI-CHAR' }),
+equal(rjs(`'"'`, { fillString:'MULTI-CHAR' }),
           `'MULTI-CHAR'`);
 equal(rjs(`const foo = '"FOO"', bar = 'B"A"R'; `),
           `const foo = '-----', bar = '-----'; `);
@@ -39,15 +41,15 @@ equal(rjs(`const foo = '"FOO"', bar = 'B"A"R'; `),
 const B = '\\';
 equal(rjs(`"${B}${B}"`), // pair of backslashes
           '"--"');
-equal(rjs(`"${B}n"`, { stringFill:1 }), // newline
+equal(rjs(`"${B}n"`, { fillString:1 }), // newline
           '"11"');
 equal(rjs(`"${B}""`), // escaped double quote
           '"--"');
-equal(rjs(`"${B}`, { stringFill:'!' }), // invalid JS
+equal(rjs(`"${B}`, { fillString:'!' }), // invalid JS
           '"!!'); // AN EXTRA CHARACTER IS ADDED!
 
 // Single quoted with backslash.
-equal(rjs(`'${B}${B}${B}n${B}"'`, { stringFill:' ' }),
+equal(rjs(`'${B}${B}${B}n${B}"'`, { fillString:' ' }),
           "'      '");
 equal(rjs(`'${B}`), // invalid JS
           "'--"); // AN EXTRA CHARACTER IS ADDED!
@@ -55,7 +57,7 @@ equal(rjs(`'${B}`), // invalid JS
 // Simple template string.
 equal(rjs('``'),
           '``');
-equal(rjs('const $foo = `{$}\\``', { stringFill:' ' }),
+equal(rjs('const $foo = `{$}\\``', { fillString:' ' }),
           'const $foo = `     `');
 equal(rjs('{ a:`A`, b:`B` }'),
           '{ a:`-`, b:`-` }');
@@ -63,7 +65,7 @@ equal(rjs('{ a:`A`, b:`B` }'),
 // Template string with backslash.
 equal(rjs('`\\n\\\``'),
           '`----`');
-equal(rjs('`\\', { stringFill:'_' }), // invalid JS
+equal(rjs('`\\', { fillString:'_' }), // invalid JS
           "`__"); // AN EXTRA CHARACTER IS ADDED!
 
 // Template string with one nest.
@@ -71,7 +73,7 @@ equal(rjs('`${}`'),
           '`${}`');
 equal(rjs('const foo = `abc${123}def`'),
           'const foo = `---${123}---`');
-equal(rjs('`abc${ { a:"A", b:\'B\' } }def`', { stringFill:' ' }),
+equal(rjs('`abc${ { a:"A", b:\'B\' } }def`', { fillString:' ' }),
           '`   ${ { a:" ", b:\' \' } }   `');
 
 // Template string with multiple nests.
@@ -81,16 +83,18 @@ equal(rjs('`abc${ { a:`A`, b:`uvw${ { x:`X`, y:2 } }xyz` } }def` "ok"'),
           '`---${ { a:`-`, b:`---${ { x:`-`, y:2 } }---` } }---` "--"');
 
 // Just a block comment.
-equal(rjs('/**/', { stringFill:' ' }),
+equal(rjs('/**/'),
           '    ');
-equal(rjs('/* "hid" * / \'hid\' // `hid` */'),
-          '                              ');
+equal(rjs('/* "hid" * / \'hid\' // `hid` */', { fillComment:'x' }),
+          'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
 
 // Just a line comment.
 equal(rjs('//'),
           '  ');
 equal(rjs('//\n2nd line'),
           '  \n2nd line');
+equal(rjs('const one = 1; // 1st line\nconst two = 2;', { fillComment:'' }),
+          'const one = 1; \nconst two = 2;');
 equal(rjs('// /* "hid" * / \'hid\' // `hid` */'),
           '                                 ');
 
@@ -124,9 +128,9 @@ equal(rjs([
     '    export: bar,',
     "    from: 'bar'",
     '};',
-].join('\n'), { stringFill:' ' }),
+].join('\n'), { fillComment:'\t', fillString:' ' }),
 [
-    "import           foo    from        '   ';",
+    "import\t\t\t\t\t\t\t\t\t\t\tfoo\t\t\t\tfrom\t\t\t\t\t\t\t\t'   ';",
     'import{bar}from"        "',
     "import'      '",
     "'                                       '",

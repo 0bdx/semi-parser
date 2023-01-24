@@ -3,13 +3,14 @@ export default function redactJs(
     options = {},
 ) {
     // Set defaults for any missing options.
-    setDefault('stringFill', '-');
+    setDefault('fillComment', ' ');
+    setDefault('fillString', '-');
     function setDefault(n, d) { // name, default
         options[n] = typeof options[n] !== 'undefined' ? options[n] : d;
     }
 
     // Destructure the options.
-    const { stringFill } = options;
+    const { fillComment, fillString } = options;
 
     // Prepare for looping.
     let src = source.split('');
@@ -31,13 +32,13 @@ export default function redactJs(
                     break;
                 case '/':
                     if (src[i+1] === '*') {
-                        src[i] = ' ';
-                        src[++i] = ' ';
+                        src[i] = fillComment;
+                        src[++i] = fillComment;
                         processBlockComment();
                         break;
                     } else if (src[i+1] === '/') {
-                        src[i] = ' ';
-                        src[++i] = ' ';
+                        src[i] = fillComment;
+                        src[++i] = fillComment;
                         processLineComment();
                         break;
                     }
@@ -49,18 +50,18 @@ export default function redactJs(
         while (++i < len) {
             switch (src[i]) {
                 case '\\': // even if the next character is ` or $
-                    src[i] = stringFill;
-                    src[++i] = stringFill;
+                    src[i] = fillString;
+                    src[++i] = fillString;
                     break;
                 case '`':
                     return;
                 case '$':
                     if (src[i+1] === '{') {
                         i++; processBlock()
-                    } else { src[i] = stringFill }
+                    } else { src[i] = fillString }
                     break;
                 default:
-                    src[i] = stringFill;
+                    src[i] = fillString;
             }
         }
     }
@@ -86,13 +87,13 @@ export default function redactJs(
         while (++i < len) {
             switch (src[i]) {
                 case '\\': // even if the next character is "
-                    src[i] = stringFill;
-                    src[++i] = stringFill;
+                    src[i] = fillString;
+                    src[++i] = fillString;
                     break;
                 case '"':
                     return;
                 default:
-                    src[i] = stringFill;
+                    src[i] = fillString;
             }
         }
     }
@@ -101,13 +102,13 @@ export default function redactJs(
         while (++i < len) {
             switch (src[i]) {
                 case '\\': // even if the next character is '
-                    src[i] = stringFill;
-                    src[++i] = stringFill;
+                    src[i] = fillString;
+                    src[++i] = fillString;
                     break;
                 case "'":
                     return;
                 default:
-                    src[i] = stringFill;
+                    src[i] = fillString;
             }
         }
     }
@@ -115,9 +116,9 @@ export default function redactJs(
     function processBlockComment() {
         while (++i < len) {
             const isAsterisk = src[i] === '*';
-            src[i] = ' ';
+            src[i] = fillComment;
             if (isAsterisk && src[i+1] === '/') {
-                src[++i] = ' ';
+                src[++i] = fillComment;
                 return;
             }
         }
@@ -126,7 +127,7 @@ export default function redactJs(
     function processLineComment() {
         while (++i < len) {
             if (src[i] === '\n') return;
-            src[i] = ' ';
+            src[i] = fillComment;
         }
     }
 
