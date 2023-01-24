@@ -15,8 +15,9 @@
   "scripts": {
     "build": "rollup -c",
     "example-1": "node ./src/redact-js/redact-js.example.js",
+    "test:build": "node test.js",
     "test:src": "node src/test.js",
-    "test": "node test.js"
+    "test": "node src/test.js"
   },
   "repository": {
     "type": "git",

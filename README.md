@@ -94,7 +94,7 @@ Open `semi-parser` in VS Code.
 ### __Handy dev commands__
 
 Run all tests on the in-development source code:  
-`npm run test:src`  
+`npm test`
 
 Run examples:  
 `npm run example-1`
@@ -103,12 +103,11 @@ Build:
 `npm run build`
 
 Run all tests on the built __semi-parser.js__ file:  
-`npm test`
+`npm run test:build`  
 
 Check what will be published:  
 `npm publish --dry-run`
 
-Publish to [https://www.npmjs.com/package/@0bdx/semi-parser
-](npmjs.com/package/@0bdx/semi-parser):  
+Publish to [npmjs.com/package/@0bdx/semi-parser](
+    https://www.npmjs.com/package/@0bdx/semi-parser):  
 `npm publish`
-

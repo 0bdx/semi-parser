@@ -15,7 +15,7 @@ export default [
 ];
 
 function generateBanner() {
-   const { author, license, name } =
+   const { author, license, name, version } =
        JSON.parse(readFileSync('./package.json', 'utf-8'));
    const firstCommitYear = getYearOfFirstGitCommit();
    if (! firstCommitYear) process.exit(1);
@@ -24,7 +24,7 @@ function generateBanner() {
        ? thisYear : `${firstCommitYear} - ${thisYear}`;
    return [
        '/**',
-       ` * @license ${name}`,
+       ` * @license ${name} ${version}`,
        ` * Copyright ${year} ${author}`,
        ` * SPDX-License-Identifier: ${license}`,
        ' */',

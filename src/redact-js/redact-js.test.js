@@ -2,13 +2,23 @@ import { equal } from 'assert';
 
 export default function redactJsTest(rjs) {
 
-    // Only contains top-level code.
+    // Only contains top-level (apex) code.
     equal(rjs(''),
               '');
     equal(rjs('const foo = 123;'),
               'const foo = 123;');
     equal(rjs('const bar = 456;', { fillApex:'_' }),
               '________________');
+
+    // Contains apex and block code.
+    equal(rjs('var baz = { a:1 }'),
+              'var baz = { a:1 }');
+    equal(rjs('var baz = { a:1 }', { fillApex:'_' }),
+              '__________{ a:1 }');
+    equal(rjs('var baz = { a:1 }', { fillBlock:'+' }),
+              'var baz = {+++++}');
+    equal(rjs('var baz = { a:1 }', { fillApex:'^', fillBlock:'=' }),
+              '^^^^^^^^^^{=====}');
 
     // Double quoted string.
     equal(rjs('""'),
