@@ -1,7 +1,17 @@
 export default function redactJs(
     source,
-    stringFill = '-',
+    options = {},
 ) {
+    // Set defaults for any missing options.
+    setDefault('stringFill', '-');
+    function setDefault(n, d) { // name, default
+        options[n] = typeof options[n] !== 'undefined' ? options[n] : d;
+    }
+
+    // Destructure the options.
+    const { stringFill } = options;
+
+    // Prepare for looping.
     let src = source.split('');
     const len = src.length;
     let i = -1;
