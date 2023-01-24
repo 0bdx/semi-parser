@@ -2,7 +2,12 @@ export default function redactJs(
     source,
     options = {},
 ) {
+
+    /* ------------------------------- Options ------------------------------ */
+
     // Set defaults for any missing options.
+    setDefault('fillApex', null);
+    setDefault('fillBlock', null);
     setDefault('fillComment', ' ');
     setDefault('fillString', '-');
     function setDefault(n, d) { // name, default
@@ -10,43 +15,210 @@ export default function redactJs(
     }
 
     // Destructure the options.
-    const { fillComment, fillString } = options;
+    const { fillBlock, fillComment, fillString, fillApex } = options;
+
+    // Choose which functions to use, based on the `options` argument. Running
+    // conditionals here avoids running conditionals many times inside loops.
+    const apex        = fillApex === null ? passApex : subApex;
+    const block       = fillBlock === null ? passBlock : subBlock;
+    const lineComment = fillComment === null ? passLineComment : subLineComment;
+    const mLComment   = fillComment === null ? passMLComment : subMLComment;
+    const backTick    = fillString === null ? passBackTick : subBackTick;
+    const doubleQuote = fillString === null ? passDoubleQuote : subDoubleQuote;
+    const singleQuote = fillString === null ? passSingleQuote : subSingleQuote;
+
+
+    /* ------------------------------- Process ------------------------------ */
 
     // Prepare for looping.
     let src = source.split('');
     const len = src.length;
     let i = -1;
 
-    processProgram();
+    // Call apex(), which will completely process `source`. After it's
+    // completed, convert the array of characters back into a string.
+    apex();
+    return src.join('');
 
-    function processProgram() {
+
+    /* ---------------------------- Sub-functions --------------------------- */
+
+    // Steps through the top-level of program scope. We are calling this the
+    // 'apex'. Passes apex characters through unchanged (default behaviour).
+    function passApex() {
         while (++i < len) {
             switch (src[i]) {
-                case '`': processBackTick();
+                case '`': backTick();
                     break;
-                case '{': processBlock();
+                case '{': block();
                     break;
-                case '"': processDoubleQuote();
+                case '"': doubleQuote();
                     break;
-                case "'": processSingleQuote();
+                case "'": singleQuote();
                     break;
                 case '/':
                     if (src[i+1] === '*') {
-                        src[i] = fillComment;
-                        src[++i] = fillComment;
-                        processBlockComment();
+                        mLComment();
                         break;
                     } else if (src[i+1] === '/') {
-                        src[i] = fillComment;
-                        src[++i] = fillComment;
-                        processLineComment();
+                        lineComment();
                         break;
                     }
             }
         }
     }
 
-    function processBackTick() {
+    // Steps through the top-level of program scope. We are calling this the
+    // 'apex'. Substitutes apex characters with `options.fillApex`.
+    function subApex() {
+        while (++i < len) {
+            switch (src[i]) {
+                case '`': backTick();
+                    break;
+                case '{': block();
+                    break;
+                case '"': doubleQuote();
+                    break;
+                case "'": singleQuote();
+                    break;
+                case '/':
+                    if (src[i+1] === '*') {
+                        mLComment();
+                        break;
+                    } else if (src[i+1] === '/') {
+                        lineComment();
+                        break;
+                    }
+                default:
+                    src[i] = fillApex;
+            }
+        }
+    }
+
+    // Steps through parts of the program inside curly brakets, below 'apex'.
+    // Passes these blocks through unchanged (default behaviour).
+    function passBlock() {
+        while (++i < len) {
+            switch (src[i]) {
+                case '`': backTick();
+                    break;
+                case '{': block();
+                    break;
+                case '}':
+                    return;
+                case '"': doubleQuote();
+                    break;
+                case "'": singleQuote();
+                    break;
+                case '/':
+                    if (src[i+1] === '*') {
+                        mLComment();
+                        break;
+                    } else if (src[i+1] === '/') {
+                        lineComment();
+                        break;
+                    }
+            }
+        }
+    }
+
+    // Steps through parts of the program inside curly brakets, below 'apex'.
+    // Substitutes these blocks with `options.fillBlock`.
+    function subBlock() {
+        while (++i < len) {
+            switch (src[i]) {
+                case '`': backTick();
+                    break;
+                case '{': block();
+                    break;
+                case '}':
+                    return;
+                case '"': doubleQuote();
+                    break;
+                case "'": singleQuote();
+                    break;
+                case '/':
+                    if (src[i+1] === '*') {
+                        mLComment();
+                        break;
+                    } else if (src[i+1] === '/') {
+                        lineComment();
+                        break;
+                    }
+                default:
+                    src[i] = fillBlock;
+            }
+        }
+    }
+
+    // Steps through single-line comments, and passes them through unchanged.
+    // For this behaviour, set `options.fillComment` to `null`.
+    function passLineComment() {
+        ++i;
+        while (++i < len) {
+            if (src[i] === '\n') return;
+        }
+    }
+
+    // Steps through single-line comments, and substitutes them with
+    // `options.fillComment`, which is set to ' ' (space) by default.
+    function subLineComment() {
+        src[i] = fillComment;
+        src[++i] = fillComment;
+        while (++i < len) {
+            if (src[i] === '\n') return;
+            src[i] = fillComment;
+        }
+    }
+
+    // Steps through multiline comments, and passes them through unchanged.
+    // For this behaviour, set `options.fillComment` to `null`.
+    function passMLComment() {
+        ++i;
+        while (++i < len) {
+            if (src[i] === '*' && src[i+1] === '/') {
+                return;
+            }
+        }
+    }
+
+    // Steps through multiline comments, and substitutes them with
+    // `options.fillComment`, which is set to ' ' (space) by default.
+    function subMLComment() {
+        src[i] = fillComment;
+        src[++i] = fillComment;
+        while (++i < len) {
+            const isAsterisk = src[i] === '*';
+            src[i] = fillComment;
+            if (isAsterisk && src[i+1] === '/') {
+                src[++i] = fillComment;
+                return;
+            }
+        }
+    }
+
+    // Steps through `template strings`, and passes them through unchanged.
+    // For this behaviour, set `options.fillString` to `null`.
+    function passBackTick() {
+        while (++i < len) {
+            switch (src[i]) {
+                case '\\': // even if the next character is ` or $
+                    ++i;
+                    break;
+                case '`':
+                    return;
+                case '$':
+                    if (src[i+1] === '{') {
+                        i++; block()
+                    }
+                    break;
+            }
+        }
+    }
+
+    // Steps through `template strings`, and substitutes them with
+    // `options.fillString`, which is set to '-' (hyphen) by default.
+    function subBackTick() {
         while (++i < len) {
             switch (src[i]) {
                 case '\\': // even if the next character is ` or $
@@ -57,7 +229,7 @@ export default function redactJs(
                     return;
                 case '$':
                     if (src[i+1] === '{') {
-                        i++; processBlock()
+                        i++; block()
                     } else { src[i] = fillString }
                     break;
                 default:
@@ -66,24 +238,23 @@ export default function redactJs(
         }
     }
 
-    function processBlock() { // needed so we don't get lost in template strings
+    // Steps through "double-quoted strings", and passes them through unchanged.
+    // For this behaviour, set `options.fillString` to `null`.
+    function passDoubleQuote() {
         while (++i < len) {
             switch (src[i]) {
-                case '`': processBackTick();
+                case '\\': // even if the next character is "
+                    ++i;
                     break;
-                case '{': processBlock();
-                    break;
-                case '}':
+                case '"':
                     return;
-                case '"': processDoubleQuote();
-                    break;
-                case "'": processSingleQuote();
-                    break;
             }
         }
     }
 
-    function processDoubleQuote() {
+    // Steps through "double-quoted strings", and substitutes them with
+    // `options.fillString`, which is set to '-' (hyphen) by default.
+    function subDoubleQuote() {
         while (++i < len) {
             switch (src[i]) {
                 case '\\': // even if the next character is "
@@ -98,7 +269,23 @@ export default function redactJs(
         }
     }
 
-    function processSingleQuote() {
+    // Steps through 'single-quoted strings', and passes them through unchanged.
+    // For this behaviour, set `options.fillString` to `null`.
+    function passSingleQuote() {
+        while (++i < len) {
+            switch (src[i]) {
+                case '\\': // even if the next character is '
+                    ++i;
+                    break;
+                case "'":
+                    return;
+            }
+        }
+    }
+
+    // Steps through 'single-quoted strings', and substitutes them with
+    // `options.fillString`, which is set to '-' (hyphen) by default.
+    function subSingleQuote() {
         while (++i < len) {
             switch (src[i]) {
                 case '\\': // even if the next character is '
@@ -112,24 +299,4 @@ export default function redactJs(
             }
         }
     }
-
-    function processBlockComment() {
-        while (++i < len) {
-            const isAsterisk = src[i] === '*';
-            src[i] = fillComment;
-            if (isAsterisk && src[i+1] === '/') {
-                src[++i] = fillComment;
-                return;
-            }
-        }
-    }
-
-    function processLineComment() {
-        while (++i < len) {
-            if (src[i] === '\n') return;
-            src[i] = fillComment;
-        }
-    }
-
-    return src.join('');
 }

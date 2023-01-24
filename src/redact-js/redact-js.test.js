@@ -1,40 +1,46 @@
 import rjs from './redact-js.js';
 import { equal } from 'assert';
 
-// Only contains code.
+// Only contains top-level code.
 equal(rjs(''),
           '');
 equal(rjs('const foo = 123;'),
           'const foo = 123;');
+equal(rjs('const bar = 456;', { fillApex:'_' }),
+          '________________');
 
-// Just double quoted string.
+// Double quoted string.
 equal(rjs('""'),
           '""');
+equal(rjs('const keepStr = "KE\\"EP"', { fillString:null }),
+          'const keepStr = "KE\\"EP"');
 equal(rjs('const foo = "FOO\\""'),
           'const foo = "-----"');
-equal(rjs('const bar = "BAR\\""', { fillString:'' }),
-          'const bar = ""');
-equal(rjs('{ a:"A", b:"B" }', { fillString:'X' }),
+equal(rjs('{ const bar = "BAR\\"" }', { fillString:'' }),
+          '{ const bar = "" }');
+equal(rjs('const obj = { a:"A", b:"B" };', { fillString:'X', fillApex:'' }),
           '{ a:"X", b:"X" }');
 
-// Just single quoted string.
+// Single quoted string.
 equal(rjs("''"),
           "''");
+equal(rjs("const keepStr = 'KE\\'EP'", { fillString:null, fillApex:'!' }),
+          "!!!!!!!!!!!!!!!!'KE\\'EP'");
 equal(rjs("const foo = 'FOO\\''", { fillString:' ' }),
           "const foo = '     '");
 equal(rjs("{ a:'A', b:'B' }"),
           "{ a:'-', b:'-' }");
 
-// Single quotes inside double quotes.
+// Single quotes and backticks inside double quotes.
 equal(rjs(`"'"`),
           `"-"`);
-equal(rjs(`const foo = "'FOO'", bar = "B'A'R"; `, { fillString:'*' }),
+equal(rjs(`const foo = "\`FOO'", bar = "B'A\`R"; `, { fillString:'*' }),
           `const foo = "*****", bar = "*****"; `);
 
-// Double quotes inside single quotes.
+// Double quotes and backticks inside single quotes.
 equal(rjs(`'"'`, { fillString:'MULTI-CHAR' }),
           `'MULTI-CHAR'`);
-equal(rjs(`const foo = '"FOO"', bar = 'B"A"R'; `),
+equal(rjs(`const foo = '"FOO\`', bar = 'B\`A"R'; `),
           `const foo = '-----', bar = '-----'; `);
 
 // Double quoted with backslash.
@@ -57,6 +63,8 @@ equal(rjs(`'${B}`), // invalid JS
 // Simple template string.
 equal(rjs('``'),
           '``');
+equal(rjs("const keepStr = `KE\\`EP`", { fillString:null }),
+          "const keepStr = `KE\\`EP`");
 equal(rjs('const $foo = `{$}\\``', { fillString:' ' }),
           'const $foo = `     `');
 equal(rjs('{ a:`A`, b:`B` }'),
@@ -71,10 +79,10 @@ equal(rjs('`\\', { fillString:'_' }), // invalid JS
 // Template string with one nest.
 equal(rjs('`${}`'),
           '`${}`');
-equal(rjs('const foo = `abc${123}def`'),
-          'const foo = `---${123}---`');
-equal(rjs('`abc${ { a:"A", b:\'B\' } }def`', { fillString:' ' }),
-          '`   ${ { a:" ", b:\' \' } }   `');
+equal(rjs('const foo = `abc${123}def`; ', { fillApex:' ' }),
+          '            `---${123}---`  ');
+equal(rjs('var s=`abc${ { a:"A", b:\'B\' } }def`', { fillString:' ' }),
+          'var s=`   ${ { a:" ", b:\' \' } }   `');
 
 // Template string with multiple nests.
 equal(rjs('`${`${`${}`}`}`'),
@@ -82,11 +90,21 @@ equal(rjs('`${`${`${}`}`}`'),
 equal(rjs('`abc${ { a:`A`, b:`uvw${ { x:`X`, y:2 } }xyz` } }def` "ok"'),
           '`---${ { a:`-`, b:`---${ { x:`-`, y:2 } }---` } }---` "--"');
 
-// Just a block comment.
+// Contains non-top-level code (code in curly brackets).
+equal(rjs(`const a = () => "A", b = () => { return 'B' };`),
+          `const a = () => "-", b = () => { return '-' };`);
+equal(rjs(`const a = () => "A", b = () => { return 'B' };`, { fillApex:'*' }),
+          `****************"-"************{ return '-' }*`);
+
+// Just a multi-line comment.
 equal(rjs('/**/'),
           '    ');
-equal(rjs('/* "hid" * / \'hid\' // `hid` */', { fillComment:'x' }),
+equal(rjs('/* "foo" * / \'foo\' // `foo` */', { fillComment:null }),
+          '/* "foo" * / \'foo\' // `foo` */');
+equal(rjs('/* "bar" * / \'bar\' // `bar` */', { fillComment:'x' }),
           'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+equal(rjs('{ /* "baz" * / \'baz\' // `baz` */ }'),
+          '{                                }');
 
 // Just a line comment.
 equal(rjs('//'),
@@ -95,8 +113,10 @@ equal(rjs('//\n2nd line'),
           '  \n2nd line');
 equal(rjs('const one = 1; // 1st line\nconst two = 2;', { fillComment:'' }),
           'const one = 1; \nconst two = 2;');
-equal(rjs('// /* "hid" * / \'hid\' // `hid` */'),
+equal(rjs('// /* "foo" * / \'foo\' // `foo` */'),
           '                                 ');
+equal(rjs('while (false) { //*"b"*/\'b\'//`b`*/\n}', { fillComment:9 }),
+          'while (false) { 999999999999999999\n}');
 
 // Typical import code.
 equal(rjs([
