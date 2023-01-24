@@ -5,7 +5,7 @@ import redactJs from './redact-js.js';
 const source = '/* Set foo to be "foo": */ let foo = "foo"; console.log(foo);';
 
 // Define a simple regular expression, which can find "foo" multiple times.
-// The `g` flag means exec() will keep searching forwards - tinyurl.com/mr2puud2
+// The `g` flag means exec() will search repeatedly - tinyurl.com/mr2puud2
 const rx = /foo/g;
 
 // "foo" appears five times in `source`, ending at index positions:

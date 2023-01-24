@@ -5,7 +5,7 @@ __A collection of tools for roughly (but quickly) parsing CSS, HTML and JavaScri
 ▶&nbsp; __Version:__ 0.0.1  
 ▶&nbsp; __NPM:__ <https://www.npmjs.com/package/@0bdx/semi-parser>  
 ▶&nbsp; __Repo:__ <https://gitlab.com/0bdx/semi-parser>  
-▶&nbsp; __Homepage:__ <https://0bdx.com/semi-parser/>
+▶&nbsp; __Homepage:__ <https://0bdx.com/semi-parser>
 
 @TODO add an overview
 
@@ -29,7 +29,7 @@ import { redactJs } from 'semi-parser';
 const source = '/* Set foo to be "foo": */ let foo = "foo"; console.log(foo);';
 
 // Define a simple regular expression, which can find "foo" multiple times.
-// The `g` flag means exec() will keep searching forwards - tinyurl.com/mr2puud2
+// The `g` flag means exec() will search repeatedly - tinyurl.com/mr2puud2
 const rx = /foo/g;
 
 // "foo" appears five times in `source`, ending at index positions:
@@ -59,17 +59,12 @@ console.log(replaced);
 ```
 
 You can find the __`redactJs()`__ example in the
-__space-js-strings-and-comments/__ directory, and run it using:  
+__src/redact-js/__ directory, and run it using:  
 `npm run example-1`
 
 ---
 
 ## __Contributing__
-
-### __Handy Dev Commands__
-
-Run all tests:  
-`npm test`
 
 ### __Set up your dev environment__
 
@@ -82,4 +77,33 @@ Run all tests:
 4.  Install and enable the [`dnamsons.kimbie-dark-plus`
     ](https://marketplace.visualstudio.com/items?itemName=dnamsons.kimbie-dark-plus)
     theme.  
+
+### __Set up the repo locally__
+
+Clone the repository, and `cd` into it.  
+`git clone git@github.com:0bdx/semi-parser.git && cd semi-parser`  
+
+Install Rollup, the only dependency.  
+`npm i`  
+3.10.1 adds 2 packages, 2.5 MB, 29 items.
+
+Open `semi-parser` in VS Code.  
+`code .`  
+
+### __Handy dev commands__
+
+Run all tests:  
+`npm test`
+
+Run examples:  
+`npm run example-1`
+
+Build:  
+`npm run build`
+
+Check what will be published:  
+`npm publish --dry-run`
+
+Publish and be damned:  
+`npm publish`
 

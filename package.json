@@ -1,10 +1,19 @@
 {
-  "name": "semi-parser",
+  "name": "@0bdx/semi-parser",
   "version": "0.0.1",
   "description": "A collection of tools for roughly (but quickly) parsing CSS, HTML and JavaScript",
-  "main": "index.js",
+  "keywords": [
+    "parse",
+    "js",
+    "redact"
+  ],
+  "main": "semi-parser.js",
   "type": "module",
+  "files": [
+    "semi-parser.js"
+  ],
   "scripts": {
+    "build": "rollup -c",
     "example-1": "node ./src/redact-js/redact-js.example.js",
     "test": "node test.js"
   },
@@ -12,11 +21,16 @@
     "type": "git",
     "url": "git+https://github.com/0bdx/semi-parser.git"
   },
-  "keywords": [],
   "author": "0bdx <hi@0bdx.com> (https://0bdx.com)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/0bdx/semi-parser/issues"
   },
-  "homepage": "https://0bdx.com/semi-parser/"
+  "homepage": "https://0bdx.com/semi-parser",
+  "devDependencies": {
+    "rollup": "^3.10.1"
+  },
+  "engines": {
+    "node": ">= 14.0.0"
+  }
 }
