@@ -2,7 +2,7 @@
 
 __A collection of tools for roughly (but quickly) parsing CSS, HTML and JavaScript.__
 
-▶&nbsp; __Version:__ 0.0.1  
+▶&nbsp; __Version:__ 0.0.2  
 ▶&nbsp; __NPM:__ <https://www.npmjs.com/package/@0bdx/semi-parser>  
 ▶&nbsp; __Repo:__ <https://gitlab.com/0bdx/semi-parser>  
 ▶&nbsp; __Homepage:__ <https://0bdx.com/semi-parser>
