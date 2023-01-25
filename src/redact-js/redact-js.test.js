@@ -1,4 +1,4 @@
-import { equal } from 'assert';
+import equal from '../private-methods/equal.js';
 
 export default function redactJsTest(rjs) {
 

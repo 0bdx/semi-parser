@@ -1,5 +1,5 @@
+import equal from '../private-methods/equal.js';
 import redactJs from './redact-js.js';
-import { equal } from 'assert';
 
 // In this JavaScript source code, we'd like to replace the identifier
 // `foo` with `ok`, without changing the comment, or the string 'foo',

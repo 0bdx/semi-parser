@@ -23,6 +23,7 @@ Require an [LTS](https://github.com/nodejs/Release) Node version (v14.0.0+).
 
 ```js
 import { equal } from 'assert';
+import { redactJs } from '@0bdx/semi-parser';
 
 // In this JavaScript source code, we'd like to replace the identifier
 // `foo` with `ok`, without changing the comment, or the string 'foo',
