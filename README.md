@@ -75,6 +75,9 @@ __src/redact-js/__ directory, and run it using:
     `node --version # should be 'v14.0.0' or greater`
 3.  Check your __VS Code__ version:  
     `code --version # should be '1.74.3' or greater`
+4.  Install and enable the [`jeremyljackson.vs-docblock`
+    ](https://marketplace.visualstudio.com/items?itemName=jeremyljackson.vs-docblock)
+    extension.
 4.  Install and enable the [`dnamsons.kimbie-dark-plus`
     ](https://marketplace.visualstudio.com/items?itemName=dnamsons.kimbie-dark-plus)
     theme.  
@@ -99,13 +102,9 @@ Run all tests on the in-development source code:
 Run examples:  
 `npm run example-1`
 
-Build:  
-`npm run build`
-
-Run all tests on the built __semi-parser.js__ file:  
+Build, run all tests on the built __semi-parser.js__ file, and check what will be published:  
+`npm run build`  
 `npm run test:build`  
-
-Check what will be published:  
 `npm publish --dry-run`
 
 Publish to [npmjs.com/package/@0bdx/semi-parser](
