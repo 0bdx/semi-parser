@@ -16,7 +16,7 @@
  * @param   {any}  actual    The value you actually got
  * @param   {any}  expected  The value you were expecting
  *
- * @return  {undefined}      Does not return anything
+ * @return  {void}           Does not return anything
  * @throws  Throws an `Error` exception if `actual !== expected`
  */
 export default function equal(actual, expected) {

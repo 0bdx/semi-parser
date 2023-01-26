@@ -10,11 +10,17 @@
   "main": "semi-parser.js",
   "type": "module",
   "files": [
+    "semi-parser.d.ts",
     "semi-parser.js"
   ],
+  "types": "types/index.d.ts",
   "scripts": {
-    "build": "rollup -c",
-    "example-1": "node ./src/redact-js/redact-js.example.js",
+    "build:production": "rollup -c",
+    "build:typings": "tsc semi-parser.js --declaration --allowJs --emitDeclarationOnly",
+    "build": "npm run build:production && npm run build:typings",
+    "example-1": "node src/redact-js/redact-js.example.js",
+    "preflight:types": "tsc semi-parser.js --allowJs --checkJs --noEmit",
+    "preflight": "npm run preflight:types",
     "test:build": "node test.js",
     "test:src": "node src/test.js",
     "test": "node src/test.js"

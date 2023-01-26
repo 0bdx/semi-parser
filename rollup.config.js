@@ -24,8 +24,9 @@ function generateBanner() {
        ? thisYear : `${firstCommitYear} - ${thisYear}`;
    return [
        '/**',
-       ` * @license ${name} ${version}`,
-       ` * Copyright ${year} ${author}`,
+       ` * https://www.npmjs.com/package/${name}`,
+       ` * @version ${version}`,
+       ` * @license Copyright (c) ${year} ${author}`,
        ` * SPDX-License-Identifier: ${license}`,
        ' */',
    ].join('\n');

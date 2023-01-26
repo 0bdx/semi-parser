@@ -1,0 +1,27 @@
+/**
+ * This file tells VS Code's TypeScript server to highlight type errors in
+ * JavaScript files in the src/ directory. You read that right: all our code is
+ * plain JavaScript, not TypeScript, but the developer experience still benefits
+ * from live type checking.
+ *
+ * This file is not related to the "build:typings" and "preflight:types" scripts
+ * in package.json:
+ * - "build:typings" generates the semi-parser.d.ts type declaration
+ * - "preflight:types" checks that semi-parser.js uses all types correctly
+ */
+{
+    "compilerOptions": {
+
+        // Enable error reporting in type-checked JavaScript files.
+        "checkJs": true,
+  
+        // Generate .d.ts files from TypeScript and JavaScript files.
+        "declaration": true,
+  
+        // Only output d.ts files and not JavaScript files.
+        "emitDeclarationOnly": true,
+    },
+
+    // Match all JavaScript files in the source directory.
+    "include": ["src/**/*.js"]
+}

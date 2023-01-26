@@ -68,18 +68,27 @@ __src/redact-js/__ directory, and run it using:
 
 ## __Contributing__
 
-### __Set up your dev environment__
+### __Set up your development machine__
 
-1.  Check your __git__ version:  
+1.  Check your __Git__ version:  
     `git --version # should be 'git version 2.20.1' or greater`
-2.  Check your __node__ version:  
+2.  Check your __Node__ version:  
     `node --version # should be 'v14.0.0' or greater`
-3.  Check your __VS Code__ version:  
+3.  Check your global __TypeScript__ version:  
+    `tsc --version # should be 'Version 4.9.4' or greater`  
+    There are no actual __.ts__ files in this project, but TypeScript can infer
+    types from the JavaScript code and JSDoc comments.
+    - VS Code uses `tsserver` to highlight errors in __src/__ JavaScript files
+    - `tsc` is needed to generate the __semi-parser.d.ts__ type declaration
+
+### __Set up VS Code__
+
+1.  Check your __VS Code__ version:  
     `code --version # should be '1.74.3' or greater`
-4.  Install and enable the [`jeremyljackson.vs-docblock`
+2.  Install and enable the [`jeremyljackson.vs-docblock`
     ](https://marketplace.visualstudio.com/items?itemName=jeremyljackson.vs-docblock)
     extension.
-4.  Install and enable the [`dnamsons.kimbie-dark-plus`
+3.  Install and enable the [`dnamsons.kimbie-dark-plus`
     ](https://marketplace.visualstudio.com/items?itemName=dnamsons.kimbie-dark-plus)
     theme.  
 
@@ -90,7 +99,7 @@ Clone the repository, and `cd` into it.
 
 Install Rollup, the only dependency.  
 `npm i`  
-3.10.1 adds 2 packages, 2.5 MB, 29 items.
+Rollup 3.10.1 adds 2 packages, 2.5 MB, 29 items.
 
 Open `semi-parser` in VS Code.  
 `code .`  
@@ -103,11 +112,21 @@ Run all tests on the in-development source code:
 Run examples:  
 `npm run example-1`
 
-Build, run all tests on the built __semi-parser.js__ file, and check what will be published:  
-`npm run build`  
-`npm run test:build`  
+Build __semi-parser.js__ and __semi-parser.d.ts__:  
+`npm run build`
+
+Run all tests on the built __semi-parser.js__ file:  
+`npm run test:build`
+
+Check that __semi-parser.js__ uses all types correctly:  
+`npm run preflight`  
+
+So before committing, run:
+`npm run build && npm run test:build && npm run preflight`
+
+Display what will be published:  
 `npm publish --dry-run`
 
 Publish to [npmjs.com/package/@0bdx/semi-parser](
-    https://www.npmjs.com/package/@0bdx/semi-parser):  
+https://www.npmjs.com/package/@0bdx/semi-parser):  
 `npm publish`

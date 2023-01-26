@@ -1,6 +1,7 @@
 /**
- * @license @0bdx/semi-parser 0.0.3
- * Copyright 2023 0bdx <hi@0bdx.com> (https://0bdx.com)
+ * https://www.npmjs.com/package/@0bdx/semi-parser
+ * @version 0.0.3
+ * @license Copyright (c) 2023 0bdx <hi@0bdx.com> (https://0bdx.com)
  * SPDX-License-Identifier: MIT
  */
 /**
