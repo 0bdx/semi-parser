@@ -1,6 +1,6 @@
 {
   "name": "@0bdx/semi-parser",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A collection of tools for roughly (but quickly) parsing CSS, HTML and JavaScript",
   "keywords": [
     "parse",
@@ -13,7 +13,7 @@
     "semi-parser.d.ts",
     "semi-parser.js"
   ],
-  "types": "types/index.d.ts",
+  "types": "semi-parser.d.ts",
   "scripts": {
     "build:production": "rollup -c",
     "build:typings": "tsc semi-parser.js --declaration --allowJs --emitDeclarationOnly",
