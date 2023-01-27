@@ -16,11 +16,11 @@
   "types": "semi-parser.d.ts",
   "scripts": {
     "build:production": "rollup -c",
-    "build:typings": "tsc semi-parser.js --declaration --allowJs --emitDeclarationOnly",
+    "build:typings": "tsc semi-parser.js --allowJs --declaration --emitDeclarationOnly",
     "build": "npm run build:production && npm run build:typings",
     "example-1": "node src/redact-js/redact-js.example.js",
     "preflight:types": "tsc semi-parser.js --allowJs --checkJs --noEmit",
-    "preflight": "npm run preflight:types",
+    "preflight": "npm run test:build && npm run preflight:types",
     "test:build": "node test.js",
     "test:src": "node src/test.js",
     "test": "node src/test.js"

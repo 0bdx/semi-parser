@@ -13,6 +13,7 @@
     "compilerOptions": {
 
         // Enable error reporting in type-checked JavaScript files.
+        // Same as adding `// @ts-check` at the top of every .js file.
         "checkJs": true,
   
         // Generate .d.ts files from TypeScript and JavaScript files.

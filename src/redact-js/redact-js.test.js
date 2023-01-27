@@ -1,5 +1,14 @@
 import equal from '../private-methods/equal.js';
 
+/**
+ * redactJs() unit tests.
+ * 
+ * @typedef {import('./redact-js').RedactJsOptions} RedactJsOptions
+ * @param   {function(string, RedactJsOptions|void): string} rjs redactJs()
+ *
+ * @return  {void}
+ * @throws  Throws an `Error` exception if a test fails
+ */
 export default function redactJsTest(rjs) {
 
     // Only contains top-level (apex) code.
@@ -58,7 +67,7 @@ export default function redactJsTest(rjs) {
     const B = '\\';
     equal(rjs(`"${B}${B}"`), // pair of backslashes
             '"--"');
-    equal(rjs(`"${B}n"`, { fillString:1 }), // newline
+    equal(rjs(`"${B}n"`, { fillString:'1' }), // newline
             '"11"');
     equal(rjs(`"${B}""`), // escaped double quote
             '"--"');
@@ -126,7 +135,7 @@ export default function redactJsTest(rjs) {
               'const one = 1; \nconst two = 2;');
     equal(rjs('// /* "foo" * / \'foo\' // `foo` */'),
               '                                 ');
-    equal(rjs('while (false) { //*"b"*/\'b\'//`b`*/\n}', { fillComment:9 }),
+    equal(rjs('while (false) { //*"b"*/\'b\'//`b`*/\n}', { fillComment:'9' }),
               'while (false) { 999999999999999999\n}');
 
     // Typical import code.

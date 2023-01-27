@@ -19,20 +19,22 @@
  *     redactJs('j`Jack ${fruit}`', {fillString:'!'})  == 'j`!!!!!${fruit}`'
  *     redactJs("k('Kale') //Lime", {fillApex:'',fillComment:''}) == "'----'"
  *
- * @param {string} source The JavaScript source code to redact
- * 
- * @param {object} [options={}]
- *     A plain object containing configuration (default is `{}`).
- * @param {string | null} [options.fillApex=null]
+ * @typedef {Object} RedactJsOptions
+ * @property {string | null} [fillApex=null]
  *     Replaces each top-level character, unless `null` (default is `null`)
- * @param {string | null} [options.fillBlock=null]
+ * @property {string | null} [fillBlock=null]
  *     Replaces each character inside `{ ... }`, unless `null` (default is `null`)
- * @param {string | null} [options.fillComment=' ']
+ * @property {string | null} [fillComment=' ']
  *     Replaces each comment character, unless `null` (default is `' '`)
- * @param {string | null} [options.fillString='-']
+ * @property {string | null} [fillString='-']
  *     Replaces each character of string content, unless `null` (default is `'-'`)
  * 
- * @return {string} The redacted code (not necessarily valid JavaScript)
+ * @param {string} source
+ *     The JavaScript source code to redact
+ * @param {RedactJsOptions} [options={}]
+ *     A plain object containing configuration (default is `{}`)
+ * @return {string}
+ *     The redacted code (not necessarily valid JavaScript)
  */
 export default function redactJs(source, options = {}) {
 
