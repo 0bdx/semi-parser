@@ -66,7 +66,7 @@ export default function redactJs(source, options = {}) {
     /* ------------------------------- Process ------------------------------ */
 
     // Prepare for looping.
-    let src = source.split('');
+    const src = source.split('');
     const len = src.length;
     let i = -1;
 

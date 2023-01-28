@@ -38,6 +38,19 @@ export type RedactJsOptions = {
     fillString?: string | null;
 };
 /**
+ * ### Fixes `import` paths in JavaScript source code, for web browsers.
+ *
+ * @TODO discuss, and show examples
+ *
+ * @param {string} source
+ *     The JavaScript source code with `import` paths that browsers can't use
+ * @param {Object} [pathMap={}]
+ *     A plain object which maps invalid paths to valid paths (default is `{}`)
+ * @return {string}
+ *     JavaScript source code with browser-friendly `import` paths
+ */
+export function fixJsImports(source: string, pathMap?: any): string;
+/**
  * https://www.npmjs.com/package/@0bdx/semi-parser
  * @version 0.0.5
  * @license Copyright (c) 2023 0bdx <hi@0bdx.com> (https://0bdx.com)
