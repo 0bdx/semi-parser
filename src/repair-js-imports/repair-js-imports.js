@@ -45,8 +45,8 @@ export default function repairJsImports(source, repairMap = {}) {
         // keywords "export" or "import".
         const prevThree = redactedParts[f-1].slice(-3);
         const prevTwo = prevThree.slice(-2);
-        const isImport = prevTwo === 'im';
-        if (! isImport && prevTwo !== 'ex') continue;
+        const isExport = prevTwo === 'ex';
+        if (! isExport && prevTwo !== 'im') continue;
 
         // Step back one more character, to make sure this "export" or "import"
         // does not end a longer string, eg "Trimport".
@@ -59,13 +59,13 @@ export default function repairJsImports(source, repairMap = {}) {
         // Get the begin and end positions of the path. Each tryMatching...()
         // function will return an object like `{ begin:22, end:44 }` if it
         // can find a match, or false if not.
-        const place = isImport ? (
+        const place = isExport ? (
+            matchExportBlock(redactedPart) ||
+            matchExportWildcard(redactedPart)
+        ) : (
             matchImportSideEffect(redactedPart) ||
             matchImportSimpleDefault(redactedPart)
-        ) : (
-            matchExportWildcard(redactedPart)            
-        )
-        ;
+        );
         if (! place) continue;
 
         // Get the code before and after the path, including the quotes.
@@ -135,7 +135,39 @@ function typicalExt(path) {
 }
 
 // Returns the position after the opening quote, and the position before the
-// closing quote, if passed a `redacatedPart` from a 'Wildcard' export.
+// closing quote, if passed a `redacatedPart` containing a 'Block' export.
+// Returns false if `redacatedPart` does not contain a 'Block' export.
+//
+// So, if `source` is 'export { x as v } from "mod";' the `redactedPart`
+// will be ' {        } from "---";' and this function will return:
+//     { begin:18, end:21 }
+//
+// See https://tinyurl.com/mrytr49k for more on re-exporting/aggregating.
+function matchExportBlock(redactedPart) {
+    const m = redactedPart.match(
+        new RegExp(
+            '^('       + // start the main capturing group m[1]
+              '\\s*'   + // match zero or more spaces at the start
+              '{'      + // match a literal opening curly bracket character
+              '\\s+'   + // match one or more spaces between the curly brackets
+              '}'      + // match a literal closing curly bracket character
+              '\\s*'   + // match zero or more spaces after `}`
+              'from'   + // match the keyword `from`
+              '\\s*'   + // match zero or more spaces after `from`
+            ')'        + // end the main capturing group
+            `(['"])`   + // match the opening quote character m[2]
+            '(-*)'     + // match zero or more hyphens m[3]
+            `(['"])`     // match the closing quote character m[4]
+        )
+    );
+    if (! m) return false; // not a 'Block' export, if the match fails
+    const begin = m[1].length + 1; // (spc, {, spc, }, spc, from, spc) + quote
+    const end = begin + m[3].length; // add the string content length
+    return { begin, end };
+}
+
+// Returns the position after the opening quote, and the position before the
+// closing quote, if passed a `redacatedPart` containing a 'Wildcard' export.
 // Returns false if `redacatedPart` does not contain a 'Wildcard' export.
 //
 // So, if `source` is 'export * from "module-name";' the `redactedPart`
@@ -152,30 +184,30 @@ function matchExportWildcard(redactedPart) {
         new RegExp(
             '^('       + // start the main capturing group m[1]
               '\\s*'   + // match zero or more spaces at the start
-              `\\*`    + // match a literal asterisk character
+              '\\*'    + // match a literal asterisk character
               '\\s*'   + // match zero or more spaces after the asterisk
-              '('      + // start the optional "as foo" capturing group m[2]
-                `as`   + // match the keyword `as`
+              '(?:'    + // start the optional "as foo" non capturing group
+                'as'   + // match the keyword `as`
                 '\\s+' + // match one or more spaces after `as`
-                `[_$A-Za-z][_$A-Za-z0-9]*` + // match the identifier
+                '[_$A-Za-z][_$A-Za-z0-9]*' + // match the identifier
                 '\\s+' + // match one or more spaces after the identifier
               ')?'     + // end the optional "as foo" capturing group
               'from'   + // match the keyword `from`
               '\\s*'   + // match zero or more spaces after `from`
             ')'        + // end the main capturing group
-            `(['"])`   + // match the opening quote character m[3]
-            '(-*)'     + // match zero or more hyphens m[4]
-            `(['"])`     // match the closing quote character m[5]
+            `(['"])`   + // match the opening quote character m[2]
+            '(-*)'     + // match zero or more hyphens m[3]
+            `(['"])`     // match the closing quote character m[4]
         )
     );
     if (! m) return false; // not a 'Wildcard' export, if the match fails
-    const begin = m[1].length + 1; // (spc, asterisk, spc, from, spc) + quote
-    const end = begin + m[4].length; // add the string content length
+    const begin = m[1].length + 1;
+    const end = begin + m[3].length; // add the string content length
     return { begin, end };
 }
 
 // Returns the position after the opening quote, and the position before the
-// closing quote, if passed a `redacatedPart` from a 'Side Effect' import.
+// closing quote, if passed a `redacatedPart` containing a 'Side Effect' import.
 // Returns false if `redacatedPart` does not contain a 'Side Effect' import.
 //
 // So, if `source` is '    import "/modules/my-module.js";' the `redactedPart`
@@ -211,7 +243,7 @@ function matchImportSimpleDefault(redactedPart) {
         new RegExp(
             '^('     + // start the main capturing group
               '\\s*' + // match zero or more spaces at the start
-              `[_$A-Za-z][_$A-Za-z0-9]*` + // match the identifier
+              '[_$A-Za-z][_$A-Za-z0-9]*' + // match the identifier
               '\\s+' + // match one or more spaces after the identifier
               'from' + // match the keyword `from`
               '\\s*' + // match zero or more spaces after `from`

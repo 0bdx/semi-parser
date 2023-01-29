@@ -54,13 +54,15 @@ export default function repairJsImportsTest(f) {
         'repairJsImports(): Unrepairable path "HTTP://example.com/foo"');
     // @TODO more
 
-    // 'Wildcard' export (https://tinyurl.com/mrytr49k) not modified.
+    // Export (https://tinyurl.com/mrytr49k) not modified.
     equal(f('export * from "./foo.js";'),
             'export * from "./foo.js";');
     equal(f("export * as ns from 'pointless';", { pointless:'pointless' }),
             "export * as ns from 'pointless';");
+    equal(f('export { x as v } from "http://0bdx.com/mod.js";'),
+            'export { x as v } from "http://0bdx.com/mod.js";');
 
-    // 'Wildcard' export is modified.
+    // Export is modified.
     equal(f("export * from '//';"),
             "export * from '//index.js';");
     equal(f('let a=1;export*from"../foo";'),
@@ -69,6 +71,12 @@ export default function repairJsImportsTest(f) {
             "export * as ns from 'ok!';");
     equal(f('// Ok:\nexport*as $ from"https://foo.example.com:123/foo"'),
             '// Ok:\nexport*as $ from"https://foo.example.com:123/foo.js"');
+    equal(f('export { x as v } from "./mod";'),
+            'export { x as v } from "./mod.js";');
+    equal(f('export{x}from"../tool-kit/";'),
+            'export{x}from"../tool-kit/index.js";');
+    equal(f("export {\n  default as fn1,\n  fn2,\n} from '/bar';\n"),
+            "export {\n  default as fn1,\n  fn2,\n} from '/bar.js';\n");
 
     // 'Side Effect' import (https://tinyurl.com/bdeu8ty9) not modified.
     equal(f('import "./foo.js";'),
