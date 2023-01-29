@@ -343,7 +343,7 @@ function redactJs(source, options = {}) {
 }
 
 /**
- * ### Fixes `import` paths in JavaScript source code, for web browsers.
+ * ### Repairs `import` paths in JavaScript source code, for web browsers.
  * 
  * @TODO discuss, and show examples
  * 
@@ -354,7 +354,7 @@ function redactJs(source, options = {}) {
  * @return {string}
  *     JavaScript source code with browser-friendly `import` paths
  */
-function fixJsImports(source, pathMap = {}) {
+function repairJsImports(source, pathMap = {}) {
 
     // Use redactJs() to hide comments, string content and code inside blocks.
     // By default, redactJs() replaces all comments with spaces, and all string
@@ -368,20 +368,20 @@ function fixJsImports(source, pathMap = {}) {
     // Split the source code into parts, where the delimiter is the 4 characters
     // "port". Each part (except for the first) will be a string which begins
     // with code immediately following "port".
-    const fixedParts = [];
+    const repairedParts = [];
     const redactedParts = redacted.split('port');
     for (let i=0, r=0, pl=redactedParts.length; r<pl; r++) {
         const start = i;
         i += redactedParts[r].length;
-        fixedParts.push(source.slice(start, i));
+        repairedParts.push(source.slice(start, i));
         i += 4; // 'port'.length is 4
     }
 
     // console.log(redactedParts);
-    // console.log(fixedParts);
+    // console.log(repairedParts);
 
     // Step through each part of the source code (apart from the first).
-    for (let f=1, fl=fixedParts.length; f<fl; f++) {
+    for (let f=1, fl=repairedParts.length; f<fl; f++) {
 
         // Step backwards two characters, to make sure this "port" ends the
         // keywords "export" or "import".
@@ -394,9 +394,9 @@ function fixJsImports(source, pathMap = {}) {
         // does not end a longer string, eg "Trimport".
         if (prevThree.length === 3 && ! /[\s;]/.test(prevThree[0])) continue;
 
-        // Handy references to the redacted and unredacted versions of the current part.
-        const fixedPart = fixedParts[f];
+        // Get the redacted and unredacted versions of the current part.
         const redactedPart = redactedParts[f];
+        const repairedPart = repairedParts[f];
 
         // Get the begin and end positions of the path. Each tryMatching...()
         // function will return an object like `{ begin:22, end:44 }` if it
@@ -409,14 +409,14 @@ function fixJsImports(source, pathMap = {}) {
 
         // Get the code before and after the path, including the quotes.
         // Get the path - the content of a literal string, eg "foo.js" => foo.js
-        const beginning = fixedPart.slice(0, place.begin);
-        const ending = fixedPart.slice(place.end);
-        const path = fixedPart.slice(place.begin, place.end);
+        const beginning = repairedPart.slice(0, place.begin);
+        const ending = repairedPart.slice(place.end);
+        const path = repairedPart.slice(place.begin, place.end);
 
         // Look up the path in `pathMap`. This can override automatic repairing.
         const pathMapped = pathMap[path];
         if (pathMapped) {
-            fixedParts[f] = `${beginning}${pathMapped}${ending}`;
+            repairedParts[f] = `${beginning}${pathMapped}${ending}`;
             continue;
         }
 
@@ -428,23 +428,22 @@ function fixJsImports(source, pathMap = {}) {
 
         // At this point, if the path does not begin '/', './', '../', 'http://'
         // or 'https://', treat it as unrepairable.
-        if (! doesBeginOk) throw Error(`fixJsImports(): Unrepairable path ${
-            fixedPart.slice(place.begin - 1, place.end + 1)}`);
+        if (! doesBeginOk) throw Error(`repairJsImports(): Unrepairable path ${
+            repairedPart.slice(place.begin - 1, place.end + 1)}`);
 
-        // Otherwise, the path needs to be fixed.
-        const fix = path.slice(-1) === '/' // ends in a forward-slash
+        // Otherwise, the path needs to be repaired.
+        const repairedPath = path.slice(-1) === '/' // ends in a forward-slash
             ? `${path}index.js`
             : /*fs.existsSync(resolve(dir, `.${dirname(url)}`, path))
                 ? `${path}/index.js`
                 :*/ `${path}.js`;
 
-        // Insert the fixed path into this part of the source code.
-        fixedParts[f] = `${beginning}${fix}${ending}`;
+        // Insert the repaired path into this part of the source code.
+        repairedParts[f] = `${beginning}${repairedPath}${ending}`;
     }
 
     // Return the reassembled source code.
-    return fixedParts.join('port');
-
+    return repairedParts.join('port');
 }
 
 
@@ -509,16 +508,16 @@ function tryMatchingSideEffect(redactedPart) {
 function tryMatchingSimpleDefault(redactedPart) {
     const m = redactedPart.match(
         new RegExp(
-            '^('       + // start the main capturing group
-              '\\s*'   + // match zero or more spaces at the start
+            '^('     + // start the main capturing group
+              '\\s*' + // match zero or more spaces at the start
               `[_$A-Za-z][_$A-Za-z0-9]*` + // match the identifier
-              '\\s+'   + // match one or more spaces after the identifier
-              'from'   + // match the keyword `from`
-              '\\s*'   + // match zero or more spaces after `from`
-            ')'        + // end the main capturing group
-            `(['"])`   + // match the opening quote character
-            '(-*)'     + // match zero or more hyphens, substituted by redactJs()
-            `(['"])`     // match the closing quote character
+              '\\s+' + // match one or more spaces after the identifier
+              'from' + // match the keyword `from`
+              '\\s*' + // match zero or more spaces after `from`
+            ')'      + // end the main capturing group
+            `(['"])` + // match the opening quote character
+            '(-*)'   + // match zero or more hyphens, substituted by redactJs()
+            `(['"])`   // match the closing quote character
         )
     );
     if (! m) return false; // not a 'Default' import, if the match fails
@@ -527,4 +526,4 @@ function tryMatchingSimpleDefault(redactedPart) {
     return { begin, end };
 }
 
-export { fixJsImports, redactJs };
+export { redactJs, repairJsImports };

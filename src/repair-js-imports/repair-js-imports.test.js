@@ -2,14 +2,14 @@ import equal from '../private-methods/equal.js';
 import throws from '../private-methods/throws.js';
 
 /**
- * fixJsImports() unit tests.
+ * repairJsImports() unit tests.
  * 
- * @param   {function(string, Object|void): string} f fixJsImports()
+ * @param   {function(string, Object|void): string} f repairJsImports()
  *
  * @return  {void}
  * @throws  Throws an `Error` exception if a test fails
  */
-export default function fixJsImportsTest(f) {
+export default function repairJsImportsTest(f) {
 
     // Valid JS which does not contain `import` or `export`.
     equal(f(''),
@@ -45,7 +45,7 @@ export default function fixJsImportsTest(f) {
 
     // Various unrepairable imports.
     throws(()=>f('import "HTTP://example.com/foo";'),
-        'fixJsImports(): Unrepairable path "HTTP://example.com/foo"');
+        'repairJsImports(): Unrepairable path "HTTP://example.com/foo"');
     // @TODO more
 
     // 'Side Effect' import (https://tinyurl.com/bdeu8ty9) not modified.
@@ -88,5 +88,5 @@ export default function fixJsImportsTest(f) {
     equal(f(`let a = 1;   import  _ from '../foo'\n   import\t\t"/.";`),
             `let a = 1;   import  _ from '../foo.js'\n   import\t\t"/..js";`);
 
-    console.log('fix-js-imports.test.js passed!');
+    console.log('repair-js-imports.test.js passed!');
 }

@@ -18,7 +18,7 @@
     "build:production": "rollup -c",
     "build:typings": "tsc semi-parser.js --allowJs --declaration --emitDeclarationOnly",
     "build": "npm run build:production && npm run build:typings",
-    "example-1": "node src/fix-js-imports/fix-js-imports.example.js",
+    "example-1": "node src/repair-js-imports/repair-js-imports.example.js",
     "example-2": "node src/redact-js/redact-js.example.js",
     "preflight:types": "tsc semi-parser.js --allowJs --checkJs --noEmit",
     "preflight": "npm run test:build && npm run preflight:types",

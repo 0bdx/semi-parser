@@ -1,11 +1,11 @@
 import {
-    fixJsImports,
+    repairJsImports,
     redactJs,
 } from './semi-parser.js';
-import fixJsImportsTest from './src/fix-js-imports/fix-js-imports.test.js';
+import repairJsImportsTest from './src/repair-js-imports/repair-js-imports.test.js';
 import redactJsTest from './src/redact-js/redact-js.test.js';
 
 console.log('Testing semi-parser.js...');
 
-fixJsImportsTest(fixJsImports);
+repairJsImportsTest(repairJsImports);
 redactJsTest(redactJs);

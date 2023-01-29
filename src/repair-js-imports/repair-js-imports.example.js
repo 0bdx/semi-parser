@@ -1,5 +1,5 @@
 import equal from '../private-methods/equal.js';
-import fixJsImports from './fix-js-imports.js';
+import repairJsImports from './repair-js-imports.js';
 
 // @TODO describe
 const source = `
@@ -8,7 +8,7 @@ const source = `
 console.log(`source:\n    ${source}`);
 
 // @TODO describe
-const result = fixJsImports(source); // no 2nd argument, so no mapping
+const result = repairJsImports(source); // no 2nd argument, so no mapping
 console.log(`result:\n    ${result}`);
 equal(result, `
     import "./import.js";
