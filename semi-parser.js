@@ -385,37 +385,40 @@ function fixJsImports(source, pathMap = {}) {
 
         // Step backwards two characters, to make sure this "port" ends the
         // keywords "export" or "import".
-        const prevThree = fixedParts[f-1].slice(-3);
+        const prevThree = redactedParts[f-1].slice(-3);
         const prevTwo = prevThree.slice(-2);
         const isImport = prevTwo === 'im';
         if (! isImport && prevTwo !== 'ex') continue;
 
-        // Step back one more character, to make sure this "import" or "export"
+        // Step back one more character, to make sure this "export" or "import"
         // does not end a longer string, eg "Trimport".
-        // Note that `substr(-3, 1)` is deprecated.
         if (prevThree.length === 3 && ! /[\s;]/.test(prevThree[0])) continue;
 
-        // Xx.
+        // Handy references to the redacted and unredacted versions of the current part.
         const fixedPart = fixedParts[f];
         const redactedPart = redactedParts[f];
 
-        // Find a 'Side Effect' import - https://tinyurl.com/bdeu8ty9 - eg:
-        //     import "/modules/my-module.js";
-        const matchSE = redactedPart.match(
-            new RegExp(
-                '^(\\s*)' + // start by matching zero or more spaces
-                `(['"])`  + // match the opening quote character
-                '(-*)'    + // match zero or more hyphens (from redactJs())
-                `(['"])`    // match the closing quote character
-            )
-        );
-        if (! matchSE) continue;
-        const [ _, spc, q1, redactedPath, q2] = matchSE;
+        // Get the begin and end positions of the path. Each tryMatching...()
+        // function will return an object like `{ begin:22, end:44 }` if it
+        // can find a match, or false if not.
+        const place =
+            tryMatchingSideEffect(redactedPart) ||
+            tryMatchingSimpleDefault(redactedPart)
+        ;
+        if (! place) continue;
 
-        // Get the path - the content of a literal string in `source`.
-        const pathStart = spc.length + 1;
-        const pathEnd = pathStart + redactedPath.length;
-        const path = fixedPart.slice(pathStart, pathEnd);
+        // Get the code before and after the path, including the quotes.
+        // Get the path - the content of a literal string, eg "foo.js" => foo.js
+        const beginning = fixedPart.slice(0, place.begin);
+        const ending = fixedPart.slice(place.end);
+        const path = fixedPart.slice(place.begin, place.end);
+
+        // Look up the path in `pathMap`. This can override automatic repairing.
+        const pathMapped = pathMap[path];
+        if (pathMapped) {
+            fixedParts[f] = `${beginning}${pathMapped}${ending}`;
+            continue;
+        }
 
         // If the path already begins '/', './', '../', 'http://' or 'https://',
         // and already has a '.js', '.mjs' or '.json' extension, do nothing.
@@ -423,52 +426,105 @@ function fixJsImports(source, pathMap = {}) {
         const hasTypicalExt = typicalExt(path);
         if (doesBeginOk && hasTypicalExt) continue;
 
-        // Otherwise, the path needs to be fixed.
-        const fix = ! doesBeginOk
-            ? pathMap[path]
-            : path.slice(-1) === '/' // ends in a forward-slash
-                ? `${path}index.js`
-                : /*fs.existsSync(resolve(dir, `.${dirname(url)}`, path))
-                    ? `${path}/index.js`
-                    :*/ `${path}.js`;
+        // At this point, if the path does not begin '/', './', '../', 'http://'
+        // or 'https://', treat it as unrepairable.
+        if (! doesBeginOk) throw Error(`fixJsImports(): Unrepairable path ${
+            fixedPart.slice(place.begin - 1, place.end + 1)}`);
 
-        if (! fix) // pathMap[path] is undefined
-            throw Error(`fixJsImports(): ${q1}${path}${q2} is not in pathMap`);
+        // Otherwise, the path needs to be fixed.
+        const fix = path.slice(-1) === '/' // ends in a forward-slash
+            ? `${path}index.js`
+            : /*fs.existsSync(resolve(dir, `.${dirname(url)}`, path))
+                ? `${path}/index.js`
+                :*/ `${path}.js`;
 
         // Insert the fixed path into this part of the source code.
-        fixedParts[f] = `${spc}${q1}${fix}${fixedPart.slice(pathEnd)}`;
+        fixedParts[f] = `${beginning}${fix}${ending}`;
     }
 
     // Return the reassembled source code.
     return fixedParts.join('port');
 
+}
 
-    /* ---------------------------- Sub-functions --------------------------- */
 
-    // Tests whether the start of a path appears to be valid for web browsers.
-    // Based on part of the list here: https://stackoverflow.com/a/69037678
-    function beginsOk(path) {
-        const p0 = path[0];
-        if (p0 === '/') return true; // eg '/foo.js' or '//example.com/foo.js'
-        if (p0 === '.') {
-            const p1 = path[1];
-            if (p1 === '/') return true; // './foo.js'
-            if (p1 === '.' && path[2] === '/') return true; // '../foo.js'
-        } else if (p0 === 'h') {
-            const p0_7 = path.slice(0, 7);
-            if (p0_7 === 'http://') return true; // 'http://example.com/foo.js'
-            if (p0_7 === 'https:/' && path[7] === '/') return true; // https://
-        }
-        return false;
+/* ---------------------------- Private Functions --------------------------- */
+
+// Tests whether the start of a path appears to be valid for web browsers.
+// Based on part of the list here: https://stackoverflow.com/a/69037678
+function beginsOk(path) {
+    const p0 = path[0];
+    if (p0 === '/') return true; // eg '/foo.js' or '//example.com/foo.js'
+    if (p0 === '.') {
+        const p1 = path[1];
+        if (p1 === '/') return true; // './foo.js'
+        if (p1 === '.' && path[2] === '/') return true; // '../foo.js'
+    } else if (p0 === 'h') {
+        const p0_7 = path.slice(0, 7);
+        if (p0_7 === 'http://') return true; // 'http://example.com/foo.js'
+        if (p0_7 === 'https:/' && path[7] === '/') return true; // https://
     }
+    return false;
+}
 
-    // Tests whether a path has a typical JavaScript or JSON extension.
-    function typicalExt(path) {
-        return path.slice(-3) === '.js'
-            || path.slice(-4) === '.mjs'
-            || path.slice(-5) === '.json';
-    }
+// Tests whether a path has a typical JavaScript or JSON extension.
+function typicalExt(path) {
+    return path.slice(-3) === '.js'
+        || path.slice(-4) === '.mjs'
+        || path.slice(-5) === '.json';
+}
 
+// Returns the position after the opening quote, and the position before the
+// closing quote, if passed a `redacatedPart` from a 'Side Effect' import.
+// Returns false if `redacatedPart` is not derived from a 'Side Effect' import.
+//
+// So, if `source` is '    import "/modules/my-module.js";' the `redactedPart`
+// will be ' "---------------------";' and this function will return:
+//     { begin:2, end:23 }
+//
+// See https://tinyurl.com/bdeu8ty9 for more on 'Side Effect' imports.
+function tryMatchingSideEffect(redactedPart) {
+    const m = redactedPart.match(
+        new RegExp(
+            '^(\\s*)' + // start by matching zero or more spaces
+            `(['"])`  + // match the opening quote character
+            '(-*)'    + // match zero or more hyphens, substituted by redactJs()
+            `(['"])`    // match the closing quote character
+        )
+    );
+    if (! m) return false; // not a 'Side Effect' import, if the match fails
+    const begin = m[1].length + 1; // space length, `+ 1` for the opening quote
+    const end = begin + m[3].length; // add the string content length
+    return { begin, end };
+}
+
+// Like tryMatchingSideEffect(), but for a simple 'Default' import.
+// Returns false if `redacatedPart` is not derived from a 'Default' import.
+//
+// So, if `source` is 'import myDefault from "my-module/";' the `redactedPart`
+// will be ' myDefault from "----------";' and this function will return:
+//     { begin:17, end:27 }
+//
+// See https://tinyurl.com/33ptaacr for more on 'Default' imports.
+function tryMatchingSimpleDefault(redactedPart) {
+    const m = redactedPart.match(
+        new RegExp(
+            '^('       + // start the main capturing group
+              '\\s*'   + // match zero or more spaces at the start
+              `[_$A-Za-z][_$A-Za-z0-9]*` + // match the identifier
+              '\\s+'   + // match one or more spaces after the identifier
+              'from'   + // match the keyword `from`
+              '\\s*'   + // match zero or more spaces after `from`
+            ')'        + // end the main capturing group
+            `(['"])`   + // match the opening quote character
+            '(-*)'     + // match zero or more hyphens, substituted by redactJs()
+            `(['"])`     // match the closing quote character
+        )
+    );
+    if (! m) return false; // not a 'Default' import, if the match fails
+    const begin = m[1].length + 1; // (spc, identifier, spc, from, spc) + quote
+    const end = begin + m[3].length; // add the string content length
+    return { begin, end };
 }
 
 export { fixJsImports, redactJs };
