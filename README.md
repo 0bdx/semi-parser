@@ -109,20 +109,25 @@ Open `semi-parser` in VS Code.
 Run all tests on the in-development source code:  
 `npm test`
 
-Run examples:  
-`npm run example-1`
+Run each example, one by one:  
+`npm run example:1`  
+`npm run example:2`  
+
+Or run all the examples:  
+`npm run examples`
 
 Build __semi-parser.js__ and __semi-parser.d.ts__:  
-`npm run build`
+`npm run build:production`  
+`npm run build:typings`
 
 Run all tests on the built __semi-parser.js__ file:  
-`npm run test:build`
+`npm run preflight:test`
 
 Check that __semi-parser.js__ uses all types correctly:  
-`npm run preflight`  
+`npm run preflight:types`  
 
-So before committing, run:
-`npm run build && npm run test:build && npm run preflight`
+Or run all the build and preflight steps in one line, eg before committing:  
+`npm run build && npm run preflight`
 
 Display what will be published:  
 `npm publish --dry-run`
