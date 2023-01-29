@@ -54,15 +54,21 @@ export default function repairJsImportsTest(f) {
         'repairJsImports(): Unrepairable path "HTTP://example.com/foo"');
     // @TODO more
 
-    // Basic 'Wildcard' export (https://tinyurl.com/mrytr49k) not modified.
+    // 'Wildcard' export (https://tinyurl.com/mrytr49k) not modified.
     equal(f('export * from "./foo.js";'),
             'export * from "./foo.js";');
+    equal(f("export * as ns from 'pointless';", { pointless:'pointless' }),
+            "export * as ns from 'pointless';");
 
-    // Basic 'Wildcard' export is modified.
+    // 'Wildcard' export is modified.
     equal(f("export * from '//';"),
             "export * from '//index.js';");
     equal(f('let a=1;export*from"../foo";'),
             'let a=1;export*from"../foo.js";');
+    equal(f("export * as ns from 'uses-repairMap';", { 'uses-repairMap':'ok!' }),
+            "export * as ns from 'ok!';");
+    equal(f('// Ok:\nexport*as $ from"https://foo.example.com:123/foo"'),
+            '// Ok:\nexport*as $ from"https://foo.example.com:123/foo.js"');
 
     // 'Side Effect' import (https://tinyurl.com/bdeu8ty9) not modified.
     equal(f('import "./foo.js";'),

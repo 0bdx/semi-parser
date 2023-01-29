@@ -1,18 +1,18 @@
 import redactJs from '../redact-js/redact-js.js';
 
 /**
- * ### Repairs `import` paths in JavaScript source code, for web browsers.
+ * ### Repairs `import` and `export` paths in JavaScript code, for web browsers.
  * 
  * @TODO discuss, and show examples
  * 
  * @param {string} source
  *     The JavaScript source code with `import` paths that browsers can't use
- * @param {Object} [pathMap={}]
+ * @param {Object} [repairMap={}]
  *     A plain object which maps invalid paths to valid paths (default is `{}`)
  * @return {string}
  *     JavaScript source code with browser-friendly `import` paths
  */
-export default function repairJsImports(source, pathMap = {}) {
+export default function repairJsImports(source, repairMap = {}) {
 
     // Use redactJs() to hide comments, string content and code inside blocks.
     // By default, redactJs() replaces all comments with spaces, and all string
@@ -63,7 +63,7 @@ export default function repairJsImports(source, pathMap = {}) {
             matchImportSideEffect(redactedPart) ||
             matchImportSimpleDefault(redactedPart)
         ) : (
-            matchExportBasicWildcard(redactedPart)            
+            matchExportWildcard(redactedPart)            
         )
         ;
         if (! place) continue;
@@ -74,10 +74,10 @@ export default function repairJsImports(source, pathMap = {}) {
         const ending = repairedPart.slice(place.end);
         const path = repairedPart.slice(place.begin, place.end);
 
-        // Look up the path in `pathMap`. This can override automatic repairing.
-        const pathMapped = pathMap[path];
-        if (pathMapped) {
-            repairedParts[f] = `${beginning}${pathMapped}${ending}`;
+        // Override automatic repairing, if the path appears in `repairMap`.
+        const repairMapped = repairMap[path];
+        if (repairMapped) {
+            repairedParts[f] = `${beginning}${repairMapped}${ending}`;
             continue;
         }
 
@@ -135,32 +135,42 @@ function typicalExt(path) {
 }
 
 // Returns the position after the opening quote, and the position before the
-// closing quote, if passed a `redacatedPart` from a basic 'Wildcard' export.
-// Returns false if `redacatedPart` does not contain a basic 'Wildcard' export.
+// closing quote, if passed a `redacatedPart` from a 'Wildcard' export.
+// Returns false if `redacatedPart` does not contain a 'Wildcard' export.
 //
-// So, if `source` is '    export * from "module-name";' the `redactedPart`
+// So, if `source` is 'export * from "module-name";' the `redactedPart`
 // will be ' * from "-----------";' and this function will return:
 //     { begin:9, end:20 }
 //
+// And if `source` is 'export * as ns from "module-name";' the `redactedPart`
+// will be ' * as ns from "-----------";' and this function will return:
+//     { begin:15, end:26 }
+//
 // See https://tinyurl.com/mrytr49k for more on re-exporting/aggregating.
-function matchExportBasicWildcard(redactedPart) {
+function matchExportWildcard(redactedPart) {
     const m = redactedPart.match(
         new RegExp(
-            '^('     + // start the main capturing group
-              '\\s*' + // match zero or more spaces at the start
-              `\\*`  + // match a literal asterisk character
-              '\\s*' + // match zero or more spaces after the asterisk
-              'from' + // match the keyword `from`
-              '\\s*' + // match zero or more spaces after `from`
-            ')'      + // end the main capturing group
-            `(['"])` + // match the opening quote character
-            '(-*)'   + // match zero or more hyphens, substituted by redactJs()
-            `(['"])`   // match the closing quote character
+            '^('       + // start the main capturing group m[1]
+              '\\s*'   + // match zero or more spaces at the start
+              `\\*`    + // match a literal asterisk character
+              '\\s*'   + // match zero or more spaces after the asterisk
+              '('      + // start the optional "as foo" capturing group m[2]
+                `as`   + // match the keyword `as`
+                '\\s+' + // match one or more spaces after `as`
+                `[_$A-Za-z][_$A-Za-z0-9]*` + // match the identifier
+                '\\s+' + // match one or more spaces after the identifier
+              ')?'     + // end the optional "as foo" capturing group
+              'from'   + // match the keyword `from`
+              '\\s*'   + // match zero or more spaces after `from`
+            ')'        + // end the main capturing group
+            `(['"])`   + // match the opening quote character m[3]
+            '(-*)'     + // match zero or more hyphens m[4]
+            `(['"])`     // match the closing quote character m[5]
         )
     );
-    if (! m) return false; // not a basic 'Wildcard' export, if the match fails
+    if (! m) return false; // not a 'Wildcard' export, if the match fails
     const begin = m[1].length + 1; // (spc, asterisk, spc, from, spc) + quote
-    const end = begin + m[3].length; // add the string content length
+    const end = begin + m[4].length; // add the string content length
     return { begin, end };
 }
 

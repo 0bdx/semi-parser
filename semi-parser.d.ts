@@ -83,15 +83,15 @@ export type RedactJsOptions = {
  */
 export function redactJs(source: string, options?: RedactJsOptions): string;
 /**
- * ### Repairs `import` paths in JavaScript source code, for web browsers.
+ * ### Repairs `import` and `export` paths in JavaScript code, for web browsers.
  *
  * @TODO discuss, and show examples
  *
  * @param {string} source
  *     The JavaScript source code with `import` paths that browsers can't use
- * @param {Object} [pathMap={}]
+ * @param {Object} [repairMap={}]
  *     A plain object which maps invalid paths to valid paths (default is `{}`)
  * @return {string}
  *     JavaScript source code with browser-friendly `import` paths
  */
-export function repairJsImports(source: string, pathMap?: any): string;
+export function repairJsImports(source: string, repairMap?: any): string;
