@@ -38,6 +38,12 @@ export default function repairJsImportsTest(f) {
             'import');
     equal(f(';import'),
             ';import');
+    equal(f('export "./foo";'),
+            'export "./foo";');
+    equal(f('export foo from "./foo";'),
+            'export foo from "./foo";');
+    equal(f('import * from "./foo";'),
+            'import * from "./foo";');
     equal(f('(import "./foo");'), // import is not allowed in (..)
             '(import "./foo");');
     equal(f('{ import "./foo" };'), // import is not allowed in {...} @TODO allow dynamic import()
@@ -47,6 +53,16 @@ export default function repairJsImportsTest(f) {
     throws(()=>f('import "HTTP://example.com/foo";'),
         'repairJsImports(): Unrepairable path "HTTP://example.com/foo"');
     // @TODO more
+
+    // Basic 'Wildcard' export (https://tinyurl.com/mrytr49k) not modified.
+    equal(f('export * from "./foo.js";'),
+            'export * from "./foo.js";');
+
+    // Basic 'Wildcard' export is modified.
+    equal(f("export * from '//';"),
+            "export * from '//index.js';");
+    equal(f('let a=1;export*from"../foo";'),
+            'let a=1;export*from"../foo.js";');
 
     // 'Side Effect' import (https://tinyurl.com/bdeu8ty9) not modified.
     equal(f('import "./foo.js";'),

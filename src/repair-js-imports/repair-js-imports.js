@@ -59,9 +59,12 @@ export default function repairJsImports(source, pathMap = {}) {
         // Get the begin and end positions of the path. Each tryMatching...()
         // function will return an object like `{ begin:22, end:44 }` if it
         // can find a match, or false if not.
-        const place =
-            tryMatchingSideEffect(redactedPart) ||
-            tryMatchingSimpleDefault(redactedPart)
+        const place = isImport ? (
+            matchImportSideEffect(redactedPart) ||
+            matchImportSimpleDefault(redactedPart)
+        ) : (
+            matchExportBasicWildcard(redactedPart)            
+        )
         ;
         if (! place) continue;
 
@@ -132,15 +135,45 @@ function typicalExt(path) {
 }
 
 // Returns the position after the opening quote, and the position before the
+// closing quote, if passed a `redacatedPart` from a basic 'Wildcard' export.
+// Returns false if `redacatedPart` does not contain a basic 'Wildcard' export.
+//
+// So, if `source` is '    export * from "module-name";' the `redactedPart`
+// will be ' * from "-----------";' and this function will return:
+//     { begin:9, end:20 }
+//
+// See https://tinyurl.com/mrytr49k for more on re-exporting/aggregating.
+function matchExportBasicWildcard(redactedPart) {
+    const m = redactedPart.match(
+        new RegExp(
+            '^('     + // start the main capturing group
+              '\\s*' + // match zero or more spaces at the start
+              `\\*`  + // match a literal asterisk character
+              '\\s*' + // match zero or more spaces after the asterisk
+              'from' + // match the keyword `from`
+              '\\s*' + // match zero or more spaces after `from`
+            ')'      + // end the main capturing group
+            `(['"])` + // match the opening quote character
+            '(-*)'   + // match zero or more hyphens, substituted by redactJs()
+            `(['"])`   // match the closing quote character
+        )
+    );
+    if (! m) return false; // not a basic 'Wildcard' export, if the match fails
+    const begin = m[1].length + 1; // (spc, asterisk, spc, from, spc) + quote
+    const end = begin + m[3].length; // add the string content length
+    return { begin, end };
+}
+
+// Returns the position after the opening quote, and the position before the
 // closing quote, if passed a `redacatedPart` from a 'Side Effect' import.
-// Returns false if `redacatedPart` is not derived from a 'Side Effect' import.
+// Returns false if `redacatedPart` does not contain a 'Side Effect' import.
 //
 // So, if `source` is '    import "/modules/my-module.js";' the `redactedPart`
 // will be ' "---------------------";' and this function will return:
 //     { begin:2, end:23 }
 //
 // See https://tinyurl.com/bdeu8ty9 for more on 'Side Effect' imports.
-function tryMatchingSideEffect(redactedPart) {
+function matchImportSideEffect(redactedPart) {
     const m = redactedPart.match(
         new RegExp(
             '^(\\s*)' + // start by matching zero or more spaces
@@ -156,14 +189,14 @@ function tryMatchingSideEffect(redactedPart) {
 }
 
 // Like tryMatchingSideEffect(), but for a simple 'Default' import.
-// Returns false if `redacatedPart` is not derived from a 'Default' import.
+// Returns false if `redacatedPart` does not contain a 'Default' import.
 //
 // So, if `source` is 'import myDefault from "my-module/";' the `redactedPart`
 // will be ' myDefault from "----------";' and this function will return:
 //     { begin:17, end:27 }
 //
 // See https://tinyurl.com/33ptaacr for more on 'Default' imports.
-function tryMatchingSimpleDefault(redactedPart) {
+function matchImportSimpleDefault(redactedPart) {
     const m = redactedPart.match(
         new RegExp(
             '^('     + // start the main capturing group
