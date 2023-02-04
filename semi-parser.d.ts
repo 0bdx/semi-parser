@@ -39,7 +39,7 @@ export type RedactJsOptions = {
 };
 /**
  * https://www.npmjs.com/package/@0bdx/semi-parser
- * @version 0.0.5
+ * @version 0.0.6
  * @license Copyright (c) 2023 0bdx <hi@0bdx.com> (https://0bdx.com)
  * SPDX-License-Identifier: MIT
  */
@@ -83,15 +83,17 @@ export type RedactJsOptions = {
  */
 export function redactJs(source: string, options?: RedactJsOptions): string;
 /**
- * ### Repairs `import` and `export` paths in JavaScript code, for web browsers.
+ * ### Repairs `export` and `import` paths in JavaScript code, for web browsers.
  *
  * @TODO discuss, and show examples
  *
+ * @TODO allow dynamic import() which can appear inside blocks
+ *
  * @param {string} source
- *     The JavaScript source code with `import` paths that browsers can't use
+ *     JavaScript code with `export` and `import` paths that browsers can't use
  * @param {Object} [repairMap={}]
  *     A plain object which maps invalid paths to valid paths (default is `{}`)
  * @return {string}
- *     JavaScript source code with browser-friendly `import` paths
+ *     JavaScript source code with browser-friendly `export` and `import` paths
  */
 export function repairJsImports(source: string, repairMap?: any): string;
